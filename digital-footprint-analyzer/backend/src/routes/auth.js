@@ -1,61 +1,115 @@
 const express = require('express');
 const router = express.Router();
-const User = require('../models/User');
+const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+const User = require('../models/User');
 
-router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
-  const salt = await bcrypt.genSalt(10);
-  const hash = await bcrypt.hash(password, salt);
-  const user = new User({ email, passwordHash: hash });
-  await user.save();
-  res.json({ ok: true });
-});
+const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
+const ACCESS_EXPIRES = '15m'; // change for prod
 
-router.post('/login', async (req, res) => {
-  const { email, password, totp } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(401).json({ error: 'Invalid' });
-  const isMatch = await bcrypt.compare(password, user.passwordHash);
-  if (!isMatch) return res.status(401).json({ error: 'Invalid' });
+// -----------------------------
+// REGISTER ROUTE
+// -----------------------------
+router.post(
+  '/register',
+  body('email').isEmail(),
+  body('password').isLength({ min: 8 }),
+  async (req, res) => {
+    console.log('Register route hit', req.body);
 
-  if (user.isTotpEnabled) {
-    if (!totp) return res.status(403).json({ error: 'TOTP required' });
-    const ok = speakeasy.totp.verify({ secret: user.totpSecret, encoding: 'base32', token: totp });
-    if (!ok) return res.status(403).json({ error: 'Invalid TOTP' });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const { email, password } = req.body;
+
+    try {
+      const existing = await User.findOne({ email });
+      if (existing) return res.status(409).json({ error: 'User already exists' });
+
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+
+      // Generate TOTP secret for Google Authenticator
+      const secret = speakeasy.generateSecret({ name: `DFV (${email})` });
+
+      const user = new User({
+        email,
+        passwordHash,
+        roles: ['viewer'],
+        totpSecret: secret.base32 // store base32 secret in DB
+      });
+      await user.save();
+
+      // Generate QR code for user to scan
+      const qrCodeUrl = await qrcode.toDataURL(secret.otpauth_url);
+
+      return res.json({
+        message: 'Registered successfully',
+        user: { id: user._id, email: user.email },
+        qrCode: qrCodeUrl
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
+);
 
-  const access = jwt.sign({ sub: user._id, roles: user.roles }, JWT_SECRET, { expiresIn: '15m' });
-  const refresh = jwt.sign({ sub: user._id }, JWT_REFRESH_SECRET, { expiresIn: '7d' });
-  res.json({ access, refresh });
-});
+// -----------------------------
+// LOGIN ROUTE
+// -----------------------------
+router.post(
+  '/login',
+  [
+    body('email').isEmail(),
+    body('password').exists(),
+    body('totp').optional() // TOTP code is optional initially
+  ],
+  async (req, res) => {
+    console.log('Login route hit', req.body);
 
-// Create TOTP secret & QR for client (protected)
-router.post('/totp/setup', async (req, res) => {
-  // assume user is authenticated and req.userId present (middleware)
-  const userId = req.body.userId; // replace with real auth
-  const secret = speakeasy.generateSecret({ name: `DFV (${req.body.email || 'org'})` });
-  const otpauth = secret.otpauth_url;
-  const imgData = await qrcode.toDataURL(otpauth);
-  // Save base32 to user.totpSecret only AFTER user verifies code (below)
-  res.json({ secretBase32: secret.base32, qr: imgData });
-});
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-router.post('/totp/verify', async (req, res) => {
-  const { userId, token, secretBase32 } = req.body;
-  const ok = speakeasy.totp.verify({ secret: secretBase32, encoding: 'base32', token });
-  if (!ok) return res.status(403).json({ error: 'Invalid token' });
-  const user = await User.findById(userId);
-  user.totpSecret = secretBase32;
-  user.isTotpEnabled = true;
-  await user.save();
-  res.json({ ok: true });
-});
+    const { email, password, totp } = req.body;
+
+    try {
+      const user = await User.findOne({ email });
+      if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+      const ok = await bcrypt.compare(password, user.passwordHash);
+      if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
+
+      // If TOTP secret exists and totp code not provided, ask for TOTP
+      if (user.totpSecret && !totp) {
+        return res.status(206).json({ message: 'TOTP required' });
+      }
+
+      // Verify TOTP if provided
+      if (user.totpSecret && totp) {
+        const verified = speakeasy.totp.verify({
+          secret: user.totpSecret,
+          encoding: 'base32',
+          token: totp,
+          window: 1 // allow 30s drift
+        });
+        if (!verified) return res.status(401).json({ error: 'Invalid TOTP code' });
+      }
+
+      // Generate JWT
+      const payload = { sub: user._id, roles: user.roles, email: user.email };
+      const access = jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_EXPIRES });
+
+      return res.json({ access, user: { id: user._id, email: user.email, roles: user.roles } });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Server error' });
+    }
+  }
+);
 
 module.exports = router;

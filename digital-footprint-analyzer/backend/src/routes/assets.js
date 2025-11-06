@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Asset = require('../models/Asset');
-const { broadcastAssetUpdate } = require('../../index');
+// const { broadcastAssetUpdate } = require('../../index');
+const { broadcastAssetUpdate } = require('../utils/broadcast');
 
 // Create/upsert asset
 router.post('/', async (req, res) => {

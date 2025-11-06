@@ -8,13 +8,13 @@ const rateLimit = require('express-rate-limit');
 
 const assetRoutes = require('./src/routes/assets');
 const authRoutes = require('./src/routes/auth');
+const { initSocket } = require('./src/utils/broadcast');
 
 const app = express();
-const server = http.createServer(app);
-const { Server } = require('socket.io');
-const io = new Server(server, {
-  cors: { origin: process.env.FRONTEND_ORIGIN || '*' }
-});
+const server = http.createServer(app); // server must be defined BEFORE using it
+
+// initialize socket.io
+initSocket(server);
 
 app.use(helmet());
 app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
@@ -25,23 +25,7 @@ app.use(rateLimit({ windowMs: 60*1000, max: 120 }));
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
 
-// Socket.IO real-time namespace for assets
-io.of('/realtime').on('connection', (socket) => {
-  console.log('Realtime client connected', socket.id);
-  socket.on('subscribeOrg', (orgId) => {
-    socket.join(`org:${orgId}`);
-  });
-  socket.on('disconnect', () => { /* ... */ });
-});
-
-// simple function to broadcast updates
-const broadcastAssetUpdate = (orgId, payload) => {
-  io.of('/realtime').to(`org:${orgId}`).emit('asset:update', payload);
-};
-
-module.exports.broadcastAssetUpdate = broadcastAssetUpdate;
-
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 5000;
 const MONGO = process.env.MONGO_URI;
 
 // Connect to MongoDB Atlas
@@ -54,7 +38,7 @@ mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
     process.exit(1);
   });
 
-
+// simple health check route
 app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
