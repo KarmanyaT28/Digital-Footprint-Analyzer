@@ -2,6 +2,11 @@ import React from "react";
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Setup2FA from "./pages/Setup2FA";
+import Dashboard from "./pages/Dashboard";
+
+
+
 
 function Home() {
   return (
@@ -41,6 +46,8 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/setup-2fa" element={<Setup2FA />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         {/* fallback to home so router never fails */}
         <Route path="*" element={<Home />} />
       </Routes>

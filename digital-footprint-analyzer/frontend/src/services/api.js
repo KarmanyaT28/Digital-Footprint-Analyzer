@@ -2,7 +2,7 @@
 
 const API_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5001";
 
-// Helper to send requests
+// Generic helper to send requests
 async function request(path, method = "GET", body = null, auth = false) {
   const headers = { "Content-Type": "application/json" };
 
@@ -17,22 +17,17 @@ async function request(path, method = "GET", body = null, auth = false) {
     body: body ? JSON.stringify(body) : null
   });
 
-  // If token expired → auto logout later we handle this
-  if (res.status === 401) {
-    console.warn("Unauthorized Request — consider redirect to login");
-  }
-
   return res.json();
 }
 
-// REGISTER
+// ✅ REGISTER
 export function registerUser(email, password) {
   return request("/api/auth/register", "POST", { email, password });
 }
 
-// LOGIN (we will add TOTP in next phase)
-export async function loginUser(email, password) {
-  const data = await request("/api/auth/login", "POST", { email, password });
+// ✅ LOGIN (supports TOTP — will expand soon)
+export async function loginUser(email, password, totp) {
+  const data = await request("/api/auth/login", "POST", { email, password, totp });
 
   if (data.access) {
     localStorage.setItem("access_token", data.access);
@@ -41,7 +36,7 @@ export async function loginUser(email, password) {
   return data;
 }
 
-// FETCH ASSETS (EXAMPLE)
+// ✅ Example protected route
 export function getAssets() {
   return request("/api/assets", "GET", null, true);
 }

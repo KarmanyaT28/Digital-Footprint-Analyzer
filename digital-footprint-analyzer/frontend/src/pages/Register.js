@@ -12,14 +12,19 @@ export default function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (form.password !== form.confirm)
       return setError("Passwords do not match");
 
+    // ✅ Register user and receive QR code from backend
     const res = await registerUser(form.email, form.password);
-    if (res.error) return setError(res.error);
 
-    alert("✅ Registration successful! Please login.");
-    navigate("/login");
+    if (res.error) return setError(res.error);
+    if (!res.qrImage) return setError("Failed to retrieve QR Code. Try again.");
+
+    // ✅ Redirect to QR setup screen
+    navigate("/setup-2fa", { state: { qrImage: res.qrImage } });
   };
 
   return (
@@ -27,7 +32,7 @@ export default function Register() {
       <div className="bg-[#11182a] p-10 rounded-xl w-[400px] shadow-lg">
         <h2 className="text-3xl font-bold mb-6 text-center">Create Account</h2>
 
-        {error && <p className="text-red-400 mb-3">{error}</p>}
+        {error && <p className="text-red-400 mb-3 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
@@ -56,7 +61,7 @@ export default function Register() {
             type="submit"
             className="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded-lg transition font-semibold"
           >
-            Register
+            Register & Generate QR
           </button>
         </form>
 
