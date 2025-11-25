@@ -6,6 +6,9 @@ import Setup2FA from "./pages/Setup2FA";
 import Dashboard from "./pages/Dashboard";
 
 
+import NiktoScan from "./pages/NiktoScan";
+
+
 
 
 function Home() {
@@ -48,6 +51,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/setup-2fa" element={<Setup2FA />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/nikto" element={<NiktoScan />} />
         {/* fallback to home so router never fails */}
         <Route path="*" element={<Home />} />
       </Routes>

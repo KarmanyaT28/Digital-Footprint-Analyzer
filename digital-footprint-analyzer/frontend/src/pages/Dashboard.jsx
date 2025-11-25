@@ -32,30 +32,43 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0f1f] text-white flex">
-      
+    <div className="min-h-screen flex bg-[#050b16] text-white">
+
       {/* SIDEBAR */}
-      <aside className="w-64 bg-[#111827] border-r border-gray-800 p-6 flex flex-col">
-        <h1 className="text-xl font-bold text-cyan-400 mb-10 tracking-wide">
+      <aside className="w-72 bg-[#0c1220] border-r border-cyan-900/40 p-6 flex flex-col shadow-2xl shadow-black/40">
+        <h1 className="text-2xl font-bold text-cyan-400 mb-12 tracking-wide">
           ZeroTrust Console
         </h1>
 
-        <nav className="space-y-3 text-gray-300">
-          <button className="w-full text-left py-2 px-3 rounded bg-[#1f2937] border border-cyan-700 text-cyan-300">
+        <nav className="space-y-3 text-gray-300 font-medium">
+          <button className="w-full text-left py-2 px-3 rounded bg-cyan-900/20 border border-cyan-700 text-cyan-300 shadow-md shadow-cyan-900/40">
             Dashboard
           </button>
-          <button className="w-full text-left py-2 px-3 rounded hover:bg-[#1f2937] transition">
-            Assets
+
+          <button
+            onClick={() => navigate("/nikto")}
+            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700"
+          >
+            Nikto Vulnerability Scan
           </button>
-          <button className="w-full text-left py-2 px-3 rounded hover:bg-[#1f2937] transition">
-            Analytics
+
+          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
+            w3af Web App Audit
+          </button>
+
+          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
+            Skipfish Recon Scan
+          </button>
+
+          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
+            Wapiti Web Vulnerability Scan
           </button>
         </nav>
 
         <div className="mt-auto">
           <button
             onClick={handleLogout}
-            className="w-full bg-red-600 hover:bg-red-500 transition py-2 rounded-lg font-semibold mt-6"
+            className="w-full bg-red-600 hover:bg-red-500 transition py-2 rounded-lg font-semibold shadow-lg shadow-red-900/40"
           >
             Logout
           </button>
@@ -67,46 +80,57 @@ export default function Dashboard() {
         {/* HEADER */}
         <div className="flex justify-between items-center mb-10">
           <div>
-            <h2 className="text-3xl font-bold">Welcome, {user?.email}</h2>
-            <p className="text-gray-400">
-              Monitor and secure your exposed digital assets
+            <h2 className="text-4xl font-bold text-cyan-300 drop-shadow-md">
+              Welcome, {user?.email}
+            </h2>
+            <p className="text-gray-400 mt-1">
+              Monitor and secure your exposed digital assets.
             </p>
           </div>
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-2 rounded-lg font-semibold shadow-xl shadow-blue-900/40"
+            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-lg font-semibold shadow-xl shadow-blue-900/40"
           >
             + Add Asset
           </button>
         </div>
 
-        {/* ASSET GRID */}
-        <h3 className="text-xl font-semibold mb-4">Assets</h3>
+        {/* ASSETS GRID */}
+        <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Assets Overview</h3>
 
         {loading ? (
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-gray-400">Loading assets...</p>
         ) : assets.length === 0 ? (
-          <p className="text-gray-500">No assets found. Add your first asset.</p>
+          <p className="text-gray-500">No assets added yet.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {assets.map((asset) => (
               <div
                 key={asset._id}
-                className="bg-[#111827] p-6 rounded-xl border border-gray-800 hover:border-cyan-400 transition"
+                className="bg-[#0c1220] p-6 rounded-xl border border-cyan-900/30 shadow-lg shadow-black/40 hover:border-cyan-400 transition"
               >
-                <h4 className="text-lg font-semibold text-cyan-400">
+                <h4 className="text-xl font-semibold text-cyan-400 tracking-wide">
                   {asset.type.toUpperCase()}
                 </h4>
-                <p className="text-gray-300 mt-2">Risk Score: {asset.riskScore}</p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Last Seen: {new Date(asset.lastSeenAt).toLocaleString()}
-                </p>
+
+                <div className="mt-4 space-y-2">
+                  <p className="text-gray-300">
+                    <span className="font-semibold">Risk Score:</span>{" "}
+                    {asset.riskScore}
+                  </p>
+                  <p className="text-gray-500 text-sm">
+                    Last Seen:{" "}
+                    {new Date(asset.lastSeenAt).toLocaleString()}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         )}
       </main>
+
+
 
       {/* ADD ASSET MODAL */}
       {showModal && (

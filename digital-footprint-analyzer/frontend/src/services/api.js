@@ -40,3 +40,10 @@ export async function loginUser(email, password, totp) {
 export function getAssets() {
   return request("/api/assets", "GET", null, true);
 }
+
+
+export async function runNiktoScan(target) {
+  const res = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/nikto/scan?target=${encodeURIComponent(target)}`);
+  return res.json();
+}
+

@@ -24,6 +24,14 @@ app.use(rateLimit({ windowMs: 60*1000, max: 120 }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
+// app.use("/api/nikto", require("./src/routes/nikto"));
+app.use("/api/nikto", require("./src/routes/nikto"));
+
+const niktoRoutes = require("./src/routes/nikto");
+app.use("/api/nikto", niktoRoutes);
+
+
+
 
 const PORT = process.env.PORT || 5000;
 const MONGO = process.env.MONGO_URI;
