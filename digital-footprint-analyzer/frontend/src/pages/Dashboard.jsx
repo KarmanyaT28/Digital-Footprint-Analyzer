@@ -35,33 +35,43 @@ export default function Dashboard() {
     <div className="min-h-screen flex bg-[#050b16] text-white">
 
       {/* SIDEBAR */}
-      <aside className="w-72 bg-[#0c1220] border-r border-cyan-900/40 p-6 flex flex-col shadow-2xl shadow-black/40">
-        <h1 className="text-2xl font-bold text-cyan-400 mb-12 tracking-wide">
+      <aside className="w-72 bg-[#0c1220] border-r border-cyan-900/40 p-6 flex flex-col shadow-xl shadow-black/50">
+        <h1 className="text-2xl font-bold text-cyan-400 mb-10 tracking-wide">
           ZeroTrust Console
         </h1>
 
-        <nav className="space-y-3 text-gray-300 font-medium">
-          <button className="w-full text-left py-2 px-3 rounded bg-cyan-900/20 border border-cyan-700 text-cyan-300 shadow-md shadow-cyan-900/40">
-            Dashboard
-          </button>
+        {/* Section Title */}
+        <p className="text-xs uppercase tracking-widest text-gray-500 mb-2">
+          Attack Surface Scanners
+        </p>
 
+        <nav className="space-y-3 text-gray-300 font-medium">
           <button
             onClick={() => navigate("/nikto")}
-            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700"
+            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border hover:border-cyan-700"
           >
             Nikto Vulnerability Scan
           </button>
 
-          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
-            w3af Web App Audit
+          <button
+            onClick={() => navigate("/wapiti")}
+            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border hover:border-cyan-700"
+          >
+            Wapiti Web Vulnerability Scan
           </button>
 
-          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
+          <button
+            onClick={() => navigate("/skipfish")}
+            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border hover:border-cyan-700"
+          >
             Skipfish Recon Scan
           </button>
 
-          <button className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border border-transparent hover:border-cyan-700">
-            Wapiti Web Vulnerability Scan
+          <button
+            onClick={() => navigate("/w3af")}
+            className="w-full text-left py-2 px-3 rounded hover:bg-cyan-800/30 transition border hover:border-cyan-700"
+          >
+            W3AF Web App Audit
           </button>
         </nav>
 
@@ -77,6 +87,7 @@ export default function Dashboard() {
 
       {/* MAIN CONTENT */}
       <main className="flex-1 p-10">
+
         {/* HEADER */}
         <div className="flex justify-between items-center mb-10">
           <div>
@@ -84,20 +95,22 @@ export default function Dashboard() {
               Welcome, {user?.email}
             </h2>
             <p className="text-gray-400 mt-1">
-              Monitor and secure your exposed digital assets.
+              Monitor, scan, and secure your exposed digital assets.
             </p>
           </div>
 
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-lg font-semibold shadow-xl shadow-blue-900/40"
+            className="bg-blue-600 hover:bg-blue-500 transition px-6 py-3 rounded-lg font-semibold shadow-lg shadow-blue-900/40"
           >
             + Add Asset
           </button>
         </div>
 
         {/* ASSETS GRID */}
-        <h3 className="text-2xl font-semibold mb-4 text-cyan-300">Assets Overview</h3>
+        <h3 className="text-2xl font-semibold mb-4 text-cyan-300">
+          Assets Overview
+        </h3>
 
         {loading ? (
           <p className="text-gray-400">Loading assets...</p>
@@ -130,9 +143,7 @@ export default function Dashboard() {
         )}
       </main>
 
-
-
-      {/* ADD ASSET MODAL */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#111827] p-8 rounded-xl w-[400px] border border-cyan-700 shadow-2xl">

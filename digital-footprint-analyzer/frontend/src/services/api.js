@@ -47,3 +47,10 @@ export async function runNiktoScan(target) {
   return res.json();
 }
 
+
+export const runWapitiScan = async (target) => {
+  const res = await fetch(`/api/wapiti/scan?target=${encodeURIComponent(target)}`);
+  return res.json();
+};
+
+

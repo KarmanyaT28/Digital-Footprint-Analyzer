@@ -16,21 +16,49 @@ const server = http.createServer(app); // server must be defined BEFORE using it
 // initialize socket.io
 initSocket(server);
 
-app.use(helmet());
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
+
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
+
+app.use(cors({
+  origin: "*",
+  methods: "GET,POST",
+}));
+
+
+// app.use(helmet());
+// app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
 app.use(express.json());
 app.use(rateLimit({ windowMs: 60*1000, max: 120 }));
 
 // Routes
+// app.use('/api/auth', authRoutes);
+// app.use('/api/assets', assetRoutes);
+// // app.use("/api/nikto", require("./src/routes/nikto"));
+// app.use("/api/nikto", require("./src/routes/nikto"));
+
+// const niktoRoutes = require("./src/routes/nikto");
+// app.use("/api/nikto", niktoRoutes);
+
+
+// app.use("/api/wapiti", require("./src/routes/wapiti"));
+
+
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/assets', assetRoutes);
-// app.use("/api/nikto", require("./src/routes/nikto"));
-app.use("/api/nikto", require("./src/routes/nikto"));
 
 const niktoRoutes = require("./src/routes/nikto");
 app.use("/api/nikto", niktoRoutes);
 
+const wapitiRoutes = require("./src/routes/wapiti");
+app.use("/api/wapiti", wapitiRoutes);
 
+app.use("/wapiti-results", express.static("wapiti-results"));
 
 
 const PORT = process.env.PORT || 5000;

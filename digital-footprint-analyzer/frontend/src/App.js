@@ -4,6 +4,10 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Setup2FA from "./pages/Setup2FA";
 import Dashboard from "./pages/Dashboard";
+import WapitiScan from "./pages/WapitiScan";
+
+// import WapitiScan from "./pages/WapitiScan";
+
 
 
 import NiktoScan from "./pages/NiktoScan";
@@ -52,6 +56,7 @@ export default function App() {
         <Route path="/setup-2fa" element={<Setup2FA />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/nikto" element={<NiktoScan />} />
+        <Route path="/wapiti" element={<WapitiScan />} />
         {/* fallback to home so router never fails */}
         <Route path="*" element={<Home />} />
       </Routes>
