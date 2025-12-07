@@ -59,7 +59,8 @@ const wapitiRoutes = require("./src/routes/wapiti");
 app.use("/api/wapiti", wapitiRoutes);
 
 app.use("/wapiti-results", express.static("wapiti-results"));
-
+app.use("/api/skipfish", require("./src/routes/skipfish"));
+app.use("/skipfish-results", express.static("skipfish-results"));
 
 const PORT = process.env.PORT || 5000;
 const MONGO = process.env.MONGO_URI;
@@ -78,3 +79,6 @@ mongoose.connect(MONGO, { useNewUrlParser: true, useUnifiedTopology: true })
 app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
+
+
+
